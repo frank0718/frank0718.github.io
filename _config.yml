@@ -9,7 +9,7 @@ highlighter: pygments
 # so be sure to set them if your theme uses them.
 #
 title : SA & PE 
-tagline: Site Tagline
+tagline: Forbiden 
 author :
   name : Frank
   email : blah@email.test
@@ -74,6 +74,7 @@ JB :
   tags_path : /tags.html
   atom_path : /atom.xml
   rss_path : /rss.xml
+  about_path: /about.md
 
   # Settings for comments helper
   # Set 'provider' to the comment provider you want to use.
