@@ -4,7 +4,7 @@
  <title>SA &amp; PE</title>
  <link href="http://frank0718.github.io/atom.xml" rel="self"/>
  <link href="http://frank0718.github.io"/>
- <updated>2015-12-16T14:53:12+08:00</updated>
+ <updated>2015-12-16T15:00:14+08:00</updated>
  <id>http://frank0718.github.io</id>
  <author>
    <name>Frank</name>
@@ -43,16 +43,16 @@ fab -h来查看&lt;/p&gt;
 &lt;p&gt;工具的核心是其配置文件,我默认就使用fabfile.py作为文件名.下面就里面一些配置做下简要介绍.&lt;/p&gt;
 
 &lt;h3&gt;(1)重要api&lt;/h3&gt;
-&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;from fabric.api import  * 导入fabric包中的核心api函数.大概包括以下
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-python&quot; data-lang=&quot;python&quot;&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;fabric.api&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;导入&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fabric&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;包中的核心&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;api&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;函数&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;大概包括以下&lt;/span&gt;
 
 
-&amp;quot;&amp;quot;&amp;quot;
-abort          fastprint      lcd            parallel       put            remote_tunnel  runs_once      show           warn_only      
-cd             get            local          path           puts           require        serial         sudo           with_settings  
-env            hide           open_shell     prefix         quiet          roles          settings       task           
-execute        hosts          output         prompt         reboot         run            shell_env      warn   
-open_shell
-&amp;quot;&amp;quot;&amp;quot;
+&lt;span class=&quot;sd&quot;&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;abort          fastprint      lcd            parallel       put            remote_tunnel  runs_once      show           warn_only      &lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;cd             get            local          path           puts           require        serial         sudo           with_settings  &lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;env            hide           open_shell     prefix         quiet          roles          settings       task           &lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;execute        hosts          output         prompt         reboot         run            shell_env      warn   &lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;open_shell&lt;/span&gt;
+&lt;span class=&quot;sd&quot;&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;其中比较重要和常用的有
 ```
