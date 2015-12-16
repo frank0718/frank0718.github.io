@@ -30,7 +30,7 @@ fab -h来查看
 工具的核心是其配置文件,我默认就使用fabfile.py作为文件名.下面就里面一些配置做下简要介绍.
 
 ###(1)重要api
-```
+``` python
 from fabric.api import  * 导入fabric包中的核心api函数.大概包括以下
 
 
