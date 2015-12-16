@@ -7,18 +7,18 @@ tags: []
 ---
 {% include JB/setup %}
 
-Fabric--运维自动化利器
+#Fabric--运维自动化利器
 ##(一)介绍
 fabric是一个开源的,使用python作为源码的自动化运维工具.它具有以下优点:
-(1)无需server端配置,只需client和server有ssh连接.
-(2)相对于saltstack,ansible更轻量级.使用安装方便.
-(3)配置文件使用python语言,源码为python,运维工程师操作起来学习成本较小.出现问题可直接翻阅源码.
-(4)可自定义python函数,完成自定的自动化功能.相对于ansible的模块化,显得比较自由.
+1. 无需server端配置,只需client和server有ssh连接.
+2. 相对于saltstack,ansible更轻量级.使用安装方便.
+3. 配置文件使用python语言,源码为python,运维工程师操作起来学习成本较小.出现问题可直接翻阅源码.
+4. 可自定义python函数,完成自定的自动化功能.相对于ansible的模块化,显得比较自由.
 ...
 
 ##(二)安装
-(1)推荐 pip install fabric
-(2)不推荐 sudo apt-get install fabric  版本会比较旧
+1. 推荐 pip install fabric
+2. 不推荐 sudo apt-get install fabric  版本会比较旧
 
 ##(三)使用
 
@@ -28,6 +28,7 @@ fab -h来查看
 工具的核心是其配置文件,我默认就使用fabfile.py作为文件名.下面就里面一些配置做下简要介绍.
 
 ###(1)重要api
+```
 from fabric.api import  * 导入fabric包中的核心api函数.大概包括以下
 
 
@@ -38,7 +39,11 @@ env            hide           open_shell     prefix         quiet          roles
 execute        hosts          output         prompt         reboot         run            shell_env      warn   
 open_shell
 """
+
+```
+
 其中比较重要和常用的有
+```
 lcd:切换本地目录
 parallel:多个server并行执行任务
 put:上传本地文件到server
@@ -52,11 +57,14 @@ execute:绑定多个方法
 hosts:选定一组server
 run:执行具体的任务.
 
+```
+
+
 ###(2)输出着色
 from fabric.colors import * 导入fabric包中的颜色函数,用来对输出进行着色.
 
 ###(3)设定环境变量
-
+```
 env.user = 'bjzhangfeng'#指定remote server中的用户
 env.port  = '22' #指定remote server ssh的port
 这个设置是全局的,在具体的函数里面可以对其重新设定来覆盖这个全局设置,比如某一台server 的ssh port 不为22.
@@ -73,8 +81,11 @@ env.roledefs = {  #设定一组角色, 比如abc 代表一组server,xyz代表一
     '2.1.1.3',
     ],
 }
+```
+
 
 ###(4)定义任务
+```
 (a):run方法
 def w():
     run('w')
@@ -150,6 +161,9 @@ fab -R xyz whoami
     run('w')
 fab -R xyz w
 使用8822端口登陆ssh执行命令
+
+```
+
 
 ##(四)总结
 本文简单介绍了fabric工具,并展示了一些基本的使用方法.有需求的同学可以深入研究,以提高工作效率.
