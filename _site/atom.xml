@@ -4,7 +4,7 @@
  <title>SA &amp; PE</title>
  <link href="http://frank0718.github.io/atom.xml" rel="self"/>
  <link href="http://frank0718.github.io"/>
- <updated>2015-12-16T13:42:51+08:00</updated>
+ <updated>2015-12-16T14:53:12+08:00</updated>
  <id>http://frank0718.github.io</id>
  <author>
    <name>Frank</name>
@@ -17,43 +17,43 @@
    <link href="http://frank0718.github.io/2015/12/16/fabric-best-practice"/>
    <updated>2015-12-16T00:00:00+08:00</updated>
    <id>http://frank0718.github.io/2015/12/16/fabric-best-practice</id>
-   <content type="html">
-&lt;h1 id=&quot;fabric--&quot;&gt;Fabric–运维自动化利器&lt;/h1&gt;
-&lt;p&gt;##(一)介绍
-fabric是一个开源的,使用python作为源码的自动化运维工具.它具有以下优点:
+   <content type="html">&lt;h1&gt;Fabric--运维自动化利器&lt;/h1&gt;
+
+&lt;h2&gt;(一)介绍&lt;/h2&gt;
+
+&lt;p&gt;fabric是一个开源的,使用python作为源码的自动化运维工具.它具有以下优点:
 1. 无需server端配置,只需client和server有ssh连接.
 2. 相对于saltstack,ansible更轻量级.使用安装方便.
 3. 配置文件使用python语言,源码为python,运维工程师操作起来学习成本较小.出现问题可直接翻阅源码.
 4. 可自定义python函数,完成自定的自动化功能.相对于ansible的模块化,显得比较自由.
-…&lt;/p&gt;
+...&lt;/p&gt;
 
-&lt;h2 id=&quot;section&quot;&gt;(二)安装&lt;/h2&gt;
+&lt;h2&gt;(二)安装&lt;/h2&gt;
+
 &lt;ol&gt;
-  &lt;li&gt;推荐 pip install fabric&lt;/li&gt;
-  &lt;li&gt;不推荐 sudo apt-get install fabric  版本会比较旧&lt;/li&gt;
+&lt;li&gt;推荐 pip install fabric&lt;/li&gt;
+&lt;li&gt;不推荐 sudo apt-get install fabric  版本会比较旧&lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;h2 id=&quot;section-1&quot;&gt;(三)使用&lt;/h2&gt;
+&lt;h2&gt;(三)使用&lt;/h2&gt;
 
 &lt;p&gt;安装完之后会有一个fab 命令来执行,默认使用pwd下面的fabfile.py 作为配置文件.也可以使用 fab -f somefile.py 来作为配置文件.具体的命令行参数可以通过
 fab -h来查看&lt;/p&gt;
 
 &lt;p&gt;工具的核心是其配置文件,我默认就使用fabfile.py作为文件名.下面就里面一些配置做下简要介绍.&lt;/p&gt;
 
-&lt;h3 id=&quot;api&quot;&gt;(1)重要api&lt;/h3&gt;
-&lt;p&gt;```
-from fabric.api import  * 导入fabric包中的核心api函数.大概包括以下&lt;/p&gt;
+&lt;h3&gt;(1)重要api&lt;/h3&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;from fabric.api import  * 导入fabric包中的核心api函数.大概包括以下
 
-&lt;p&gt;”””
-abort          fastprint      lcd            parallel       put            remote_tunnel  runs_once      show           warn_only    &lt;br /&gt;
-cd             get            local          path           puts           require        serial         sudo           with_settings&lt;br /&gt;
-env            hide           open_shell     prefix         quiet          roles          settings       task         &lt;br /&gt;
-execute        hosts          output         prompt         reboot         run            shell_env      warn &lt;br /&gt;
+
+&amp;quot;&amp;quot;&amp;quot;
+abort          fastprint      lcd            parallel       put            remote_tunnel  runs_once      show           warn_only      
+cd             get            local          path           puts           require        serial         sudo           with_settings  
+env            hide           open_shell     prefix         quiet          roles          settings       task           
+execute        hosts          output         prompt         reboot         run            shell_env      warn   
 open_shell
-“””&lt;/p&gt;
-
-&lt;p&gt;```&lt;/p&gt;
-
+&amp;quot;&amp;quot;&amp;quot;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
 &lt;p&gt;其中比较重要和常用的有
 ```
 lcd:切换本地目录
@@ -68,117 +68,113 @@ roles:选定一组role
 execute:绑定多个方法
 hosts:选定一组server
 run:执行具体的任务.&lt;/p&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;###(2)输出着色
+from fabric.colors import * 导入fabric包中的颜色函数,用来对输出进行着色.
 
-&lt;p&gt;```&lt;/p&gt;
-
-&lt;h3 id=&quot;section-2&quot;&gt;(2)输出着色&lt;/h3&gt;
-&lt;p&gt;from fabric.colors import * 导入fabric包中的颜色函数,用来对输出进行着色.&lt;/p&gt;
-
-&lt;h3 id=&quot;section-3&quot;&gt;(3)设定环境变量&lt;/h3&gt;
-&lt;p&gt;```
-env.user = ‘bjzhangfeng’#指定remote server中的用户
-env.port  = ‘22’ #指定remote server ssh的port
+###(3)设定环境变量
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;env.user = &amp;#39;bjzhangfeng&amp;#39;#指定remote server中的用户
+env.port  = &amp;#39;22&amp;#39; #指定remote server ssh的port
 这个设置是全局的,在具体的函数里面可以对其重新设定来覆盖这个全局设置,比如某一台server 的ssh port 不为22.&lt;/p&gt;
 
 &lt;p&gt;env.roledefs = {  #设定一组角色, 比如abc 代表一组server,xyz代表一组server
-    ‘abc’:[
-    ‘1.1.1.1’,
-    ‘1.1.1.2’,
-    ‘1.1.1.3’,
+    &amp;#39;abc&amp;#39;:[
+    &amp;#39;1.1.1.1&amp;#39;,
+    &amp;#39;1.1.1.2&amp;#39;,
+    &amp;#39;1.1.1.3&amp;#39;,
     ],
-  ‘xyz’:[
-    ‘2.1.1.1’,
-    ‘2.1.1.2’,
-    ‘2.1.1.3’,
+  &amp;#39;xyz&amp;#39;:[
+    &amp;#39;2.1.1.1&amp;#39;,
+    &amp;#39;2.1.1.2&amp;#39;,
+    &amp;#39;2.1.1.3&amp;#39;,
     ],
 }
 ```&lt;/p&gt;
 
-&lt;h3 id=&quot;section-4&quot;&gt;(4)定义任务&lt;/h3&gt;
-&lt;p&gt;```
-(a):run方法
+&lt;h3&gt;(4)定义任务&lt;/h3&gt;
+&lt;div class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-text&quot; data-lang=&quot;text&quot;&gt;(a):run方法
 def w():
-    run(‘w’)
+    run(&amp;#39;w&amp;#39;)
 通过定义函数来执行具体的任务,run指在server上 以 env.user用户执行w命令.
 fab -R abc w
 在abc这组server上执行w
 fab -H 1.1.1.1 w
 在单台server上执行 w
 fab -H 1.1.1.1,1.1.1.2 w
-在这两台机器上执行w&lt;/p&gt;
+在这两台机器上执行w
 
-&lt;p&gt;(b)local 方法
+(b)local 方法
 def w():
-   local(‘w’)
+   local(&amp;#39;w&amp;#39;)
 fab w
-在本地执行w命令&lt;/p&gt;
+在本地执行w命令
 
-&lt;p&gt;(c)sudo 方法
+(c)sudo 方法
 def ss():
-  sudo(‘ss -s’)
+  sudo(&amp;#39;ss -s&amp;#39;)
 fab -R abc ss
-在abc组以sudo的方式执行ss -s&lt;/p&gt;
+在abc组以sudo的方式执行ss -s
 
-&lt;p&gt;(d)roles/hosts装饰器
-@roles(‘abc’)
+(d)roles/hosts装饰器
+@roles(&amp;#39;abc&amp;#39;)
 def w():
-    run(‘w’)&lt;/p&gt;
+    run(&amp;#39;w&amp;#39;)
 
-&lt;p&gt;fab w
-绑定w方法到abc服务器角色. 对于某个方法只适用于某个role的情形下,非常好用.&lt;/p&gt;
-
-&lt;p&gt;(e)parallel装饰器.
-@parallel
-@roles(‘abc’)
-def w():
-    run(‘w’)
 fab w
-以并行的方式在abc一组server上,执行w命令.由于fabric默认是串行的执行任务.在server比较多的情况下,并行执行可以节省时间.&lt;/p&gt;
+绑定w方法到abc服务器角色. 对于某个方法只适用于某个role的情形下,非常好用.
 
-&lt;p&gt;(f)put方法/get 方法
+(e)parallel装饰器.
+@parallel
+@roles(&amp;#39;abc&amp;#39;)
+def w():
+    run(&amp;#39;w&amp;#39;)
+fab w
+以并行的方式在abc一组server上,执行w命令.由于fabric默认是串行的执行任务.在server比较多的情况下,并行执行可以节省时间.
+
+(f)put方法/get 方法
 def put():
-   put(‘~/locafile’,’~/’)
+   put(&amp;#39;~/locafile&amp;#39;,&amp;#39;~/&amp;#39;)
 fab -R abc put
-把本地文件put到server端&lt;/p&gt;
+把本地文件put到server端
 
-&lt;p&gt;(g) 对方法传参数,
+(g) 对方法传参数,
 def curlc(url):
     while True:
-        local(‘curl -I %s ; sleep 1’ % (url,))
+        local(&amp;#39;curl -I %s ; sleep 1&amp;#39; % (url,))
 fab curlc:http://www.163.com
 对于多个参数用逗号分隔
-def curl(url,ip=’2.2.2.2’):
+def curl(url,ip=&amp;#39;2.2.2.2&amp;#39;):
     while True:
-        local(‘curl -I %s -x %s:80; sleep 1’ % (url,ip))
-fab curl:http://www.163.com,1.1.1.1&lt;/p&gt;
+        local(&amp;#39;curl -I %s -x %s:80; sleep 1&amp;#39; % (url,ip))
+fab curl:http://www.163.com,1.1.1.1
 
-&lt;p&gt;(h)execute方法
+(h)execute方法
 def ab(url):
     execute(a,url)
     execute(b,url)
 fab -R abc ab
-当需要合并执行多个方法的时候可以用这种方式,&lt;/p&gt;
+当需要合并执行多个方法的时候可以用这种方式,
 
-&lt;p&gt;(i)更换user,port
+(i)更换user,port
 def whoami():
-    env.user = ‘fabric’
-    run(‘whoami’)
+    env.user = &amp;#39;fabric&amp;#39;
+    run(&amp;#39;whoami&amp;#39;)
 fab -R xyz whoami
-在xyz上以fabric用户执行&lt;/p&gt;
+在xyz上以fabric用户执行
 
-&lt;p&gt;def ew():
-    env.port = ‘8822’
-    run(‘w’)
+ def ew():
+    env.port = &amp;#39;8822&amp;#39;
+    run(&amp;#39;w&amp;#39;)
 fab -R xyz w
-使用8822端口登陆ssh执行命令&lt;/p&gt;
+使用8822端口登陆ssh执行命令
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h2&gt;(四)总结&lt;/h2&gt;
 
-&lt;p&gt;```&lt;/p&gt;
-
-&lt;h2 id=&quot;section-5&quot;&gt;(四)总结&lt;/h2&gt;
 &lt;p&gt;本文简单介绍了fabric工具,并展示了一些基本的使用方法.有需求的同学可以深入研究,以提高工作效率.&lt;/p&gt;
 
-&lt;h2 id=&quot;section-6&quot;&gt;(五)参考文档&lt;/h2&gt;
-&lt;p&gt;http://docs.fabfile.org/en/1.10/index.html&lt;/p&gt;
+&lt;h2&gt;(五)参考文档&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://docs.fabfile.org/en/1.10/index.html&quot;&gt;http://docs.fabfile.org/en/1.10/index.html&lt;/a&gt;&lt;/p&gt;
 </content>
  </entry>
  
@@ -187,23 +183,25 @@ fab -R xyz w
    <link href="http://frank0718.github.io/2015/12/14/github-blog"/>
    <updated>2015-12-14T00:00:00+08:00</updated>
    <id>http://frank0718.github.io/2015/12/14/github-blog</id>
-   <content type="html">
-&lt;h1 id=&quot;github&quot;&gt;搭建github博客&lt;/h1&gt;
+   <content type="html">&lt;h1&gt;搭建github博客&lt;/h1&gt;
 
 &lt;p&gt;&lt;strong&gt;在国内的环境装软件真是TM的艰辛&lt;/strong&gt;&lt;/p&gt;
 
 &lt;p&gt;先列出环境 Ubuntu12.04 i386&lt;/p&gt;
 
-&lt;h2 id=&quot;rvm&quot;&gt;(1) 安装rvm&lt;/h2&gt;
-&lt;p&gt;按照google搜出来的教程.
-curl -L https://get.rvm.io | bash -s stable 根本没反应好不好,
-只好去vps上把https://get.rvm.io代码拿到 push到git 上,或者copy到本地. 执行
-bash rvm.sh stable&lt;/p&gt;
+&lt;h2&gt;(1) 安装rvm&lt;/h2&gt;
 
-&lt;h2 id=&quot;github-bitbucket-&quot;&gt;(2) 保证github 或者bitbucket 可用.&lt;/h2&gt;
+&lt;p&gt;按照google搜出来的教程.
+curl -L &lt;a href=&quot;https://get.rvm.io&quot;&gt;https://get.rvm.io&lt;/a&gt; | bash -s stable 根本没反应好不好,
+只好去vps上把&lt;a href=&quot;https://get.rvm.io%E4%BB%A3%E7%A0%81%E6%8B%BF%E5%88%B0&quot;&gt;https://get.rvm.io代码拿到&lt;/a&gt; push到git 上,或者copy到本地. 执行
+bash rvm.sh stable &lt;/p&gt;
+
+&lt;h2&gt;(2) 保证github 或者bitbucket 可用.&lt;/h2&gt;
+
 &lt;p&gt;rvm.sh 要从github 或者 bitbucket.org取代码.&lt;/p&gt;
 
-&lt;h2 id=&quot;etcprofile-rvm&quot;&gt;(3)配置 /etc/profile 让系统找到rvm的位置.&lt;/h2&gt;
+&lt;h2&gt;(3)配置 /etc/profile 让系统找到rvm的位置.&lt;/h2&gt;
+
 &lt;p&gt;rvm安装完成后, 
 默认rvm 装在 /usr/local/rvm, 
 编辑/etc/profile, 最后加入
@@ -212,59 +210,63 @@ export PATH=/usr/local/../bin:$PATH
 rvm -v
 rvm 1.26.11&lt;/p&gt;
 
-&lt;h2 id=&quot;ubuntu&quot;&gt;(4)配置ubuntu的源&lt;/h2&gt;
+&lt;h2&gt;(4)配置ubuntu的源&lt;/h2&gt;
+
 &lt;p&gt;使用souhu的12.04的源. 
 apt-get update  , 
 因为默认的源 没法更新libsqlite ,  坑爹.  使用搜狐的就可以了.&lt;/p&gt;
 
 &lt;p&gt;rvm requirements 查看依赖,并自动解决依赖.
 执行之后下面的都装上了,为安装ruby做准备,又离成功近了唉
-apt-get –no-install-recommends –yes install gawk libyaml-dev libsqlite3-dev sqlite3 libgdbm-dev libtool bison&lt;/p&gt;
+apt-get --no-install-recommends --yes install gawk libyaml-dev libsqlite3-dev sqlite3 libgdbm-dev libtool bison&lt;/p&gt;
 
-&lt;h2 id=&quot;ruby-fail&quot;&gt;(5)第一次安装ruby (fail)&lt;/h2&gt;
+&lt;h2&gt;(5)第一次安装ruby (fail)&lt;/h2&gt;
+
 &lt;p&gt;rvm install 2.0.0
 No binary rubies available for: ubuntu/12.04/i386/ruby-2.0.0-p643.
 还要编译安装.
-….中间省略
-Installing Ruby from source to: /usr/local/rvm/rubies/ruby-2.0.0-p643, this may take a while depending on your cpu(s)…&lt;/p&gt;
+....中间省略
+Installing Ruby from source to: /usr/local/rvm/rubies/ruby-2.0.0-p643, this may take a while depending on your cpu(s)...&lt;/p&gt;
 
-&lt;p&gt;ruby-2.0.0-p643 - #extracting ruby-2.0.0-p643 to /usr/local/rvm/src/ruby-2.0.0-p643….
-ruby-2.0.0-p643 - #configuring…………………………………………..
+&lt;p&gt;ruby-2.0.0-p643 - #extracting ruby-2.0.0-p643 to /usr/local/rvm/src/ruby-2.0.0-p643....
+ruby-2.0.0-p643 - #configuring..................................................
 ruby-2.0.0-p643 - #post-configuration..
-ruby-2.0.0-p643 - #compiling…………………………………………………………………..
-ruby-2.0.0-p643 - #installing…………………………
+ruby-2.0.0-p643 - #compiling.............................................................................
+ruby-2.0.0-p643 - #installing..............................
 ruby-2.0.0-p643 - #making binaries executable..
 ruby-2.0.0-p643 - #downloading rubygems-2.4.8  卡住不动了
-好吧.ctrl c取消了安装过程,downloading是在走不动啊&lt;/p&gt;
+好吧.ctrl c取消了安装过程,downloading是在走不动啊 &lt;/p&gt;
 
-&lt;h2 id=&quot;ruby-fail-1&quot;&gt;(6)第一次配置ruby (fail)&lt;/h2&gt;
-&lt;p&gt;rvm 2.0.0 –default
+&lt;h2&gt;(6)第一次配置ruby (fail)&lt;/h2&gt;
+
+&lt;p&gt;rvm 2.0.0 --default
 报错
-Gemset ‘’ does not exist, ‘rvm ruby-2.0.0-p643 do rvm gemset create ‘ first, or append ‘–create’.
+Gemset &amp;#39;&amp;#39; does not exist, &amp;#39;rvm ruby-2.0.0-p643 do rvm gemset create &amp;#39; first, or append &amp;#39;--create&amp;#39;.
 看来ruby 和gem是需要同时安装的.
-具体怎么单独安装gem , 查不到…&lt;/p&gt;
+具体怎么单独安装gem , 查不到...&lt;/p&gt;
 
-&lt;p&gt;痛定思痛. 再去google.&lt;/p&gt;
+&lt;p&gt;痛定思痛. 再去google. &lt;/p&gt;
 
-&lt;h2 id=&quot;ruby-success&quot;&gt;(7)第二次安装ruby (success)&lt;/h2&gt;
+&lt;h2&gt;(7)第二次安装ruby (success)&lt;/h2&gt;
+
 &lt;p&gt;由于rvm安装ruby时,使用的是国外的源, 速度不忍直视.&lt;/p&gt;
 
 &lt;p&gt;修改rvm的源 为taobao的 
-$ sed -i -E ‘s!https?://cache.ruby-lang.org/pub/ruby!https://ruby.taobao.org/mirrors/ruby!’$rvm_path/config/db
+$ sed -i -E &amp;#39;s!https?://cache.ruby-lang.org/pub/ruby!&lt;a href=&quot;https://ruby.taobao.org/mirrors/ruby!&amp;#x27;$rvm_path/config/db&quot;&gt;https://ruby.taobao.org/mirrors/ruby!&amp;#39;$rvm_path/config/db&lt;/a&gt;
 这里的rvmpath就是/usr/local/rvm/目录.&lt;/p&gt;
 
 &lt;p&gt;rvm install 2.2.0&lt;/p&gt;
 
-&lt;p&gt;完成. 速度还挺快.&lt;/p&gt;
+&lt;p&gt;完成. 速度还挺快. &lt;/p&gt;
 
 &lt;p&gt;当做默认的rvm版本
- rvm use 2.2.0 –default
+ rvm use 2.2.0 --default
 Using /usr/local/rvm/gems/ruby-2.2.0&lt;/p&gt;
 
 &lt;p&gt;查询已经安装的ruby
 rvm list
 卸载一个已安装版本
-rvm remove 2.0.0&lt;/p&gt;
+rvm remove 2.0.0 &lt;/p&gt;
 
 &lt;p&gt;ruby -v
 ruby 2.2.0p0 (2014-12-25 revision 49005) [i686-linux]&lt;/p&gt;
@@ -273,62 +275,63 @@ ruby 2.2.0p0 (2014-12-25 revision 49005) [i686-linux]&lt;/p&gt;
  gem -v
 2.4.8&lt;/p&gt;
 
-&lt;p&gt;走到这一步,泪流满面,感谢方校长….&lt;/p&gt;
+&lt;p&gt;走到这一步,泪流满面,感谢方校长....&lt;/p&gt;
 
-&lt;h2 id=&quot;gem&quot;&gt;(8) 配置gem源&lt;/h2&gt;
+&lt;h2&gt;(8) 配置gem源&lt;/h2&gt;
+
 &lt;p&gt;速度问题,必须修改 gem的源 为淘宝的 . 
-$ gem sources –add https://ruby.taobao.org/ –remove https://rubygems.org/
+$ gem sources --add &lt;a href=&quot;https://ruby.taobao.org/&quot;&gt;https://ruby.taobao.org/&lt;/a&gt; --remove &lt;a href=&quot;https://rubygems.org/&quot;&gt;https://rubygems.org/&lt;/a&gt;
 $ gem sources -l
-&lt;em&gt;** CURRENT SOURCES **&lt;/em&gt;&lt;/p&gt;
+*** CURRENT SOURCES ***&lt;/p&gt;
 
-&lt;p&gt;https://ruby.taobao.org
+&lt;p&gt;&lt;a href=&quot;https://ruby.taobao.org&quot;&gt;https://ruby.taobao.org&lt;/a&gt;
 请确保只有 ruby.taobao.org&lt;/p&gt;
 
 &lt;p&gt;有选择的安装rails
 $ gem install rails
-https://ruby.taobao.org/&lt;/p&gt;
+&lt;a href=&quot;https://ruby.taobao.org/&quot;&gt;https://ruby.taobao.org/&lt;/a&gt;&lt;/p&gt;
 
-&lt;h2 id=&quot;jeklly-&quot;&gt;(9)安装 jeklly (终于来了)&lt;/h2&gt;
+&lt;h2&gt;(9)安装 jeklly (终于来了)&lt;/h2&gt;
 
 &lt;p&gt;gem install jekyll -V&lt;/p&gt;
 
 &lt;p&gt;第一次装报ssl的错误, 查了一大堆 也没看出来咋搞. 
 具体参考:
-https://gist.github.com/luislavena/f064211759ee0f806c88
-https://raw.githubusercontent.com/rubygems/rubygems/master/lib/rubygems/ssl_certs/AddTrustExternalCARoot-2048.pem&lt;/p&gt;
+&lt;a href=&quot;https://gist.github.com/luislavena/f064211759ee0f806c88&quot;&gt;https://gist.github.com/luislavena/f064211759ee0f806c88&lt;/a&gt;
+&lt;a href=&quot;https://raw.githubusercontent.com/rubygems/rubygems/master/lib/rubygems/ssl_certs/AddTrustExternalCARoot-2048.pem&quot;&gt;https://raw.githubusercontent.com/rubygems/rubygems/master/lib/rubygems/ssl_certs/AddTrustExternalCARoot-2048.pem&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;http://blacktha.com/2015/07/06/tech/Ruby/
-http://yunkus.com/article/ziyuan/287.html&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;http://blacktha.com/2015/07/06/tech/Ruby/&quot;&gt;http://blacktha.com/2015/07/06/tech/Ruby/&lt;/a&gt;
+&lt;a href=&quot;http://yunkus.com/article/ziyuan/287.html&quot;&gt;http://yunkus.com/article/ziyuan/287.html&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;等了一会再装就ok了(网络问题?).&lt;/p&gt;
+&lt;p&gt;等了一会再装就ok了(网络问题?). &lt;/p&gt;
 
 &lt;p&gt;jekyll -v
 jekyll 3.0.1&lt;/p&gt;
 
-&lt;h2 id=&quot;section&quot;&gt;(10)  搭建博客&lt;/h2&gt;
+&lt;h2&gt;(10)  搭建博客&lt;/h2&gt;
+
 &lt;p&gt;前提:
 按照github的提示一步步建立自己的repo
 然后参考了一个博客,使用现成的模板&lt;/p&gt;
 
-&lt;p&gt;git clone https://github.com/plusjade/jekyll-bootstrap.git
+&lt;p&gt;git clone &lt;a href=&quot;https://github.com/plusjade/jekyll-bootstrap.git&quot;&gt;https://github.com/plusjade/jekyll-bootstrap.git&lt;/a&gt;
 jekyll server
-启动一个本地的server .&lt;/p&gt;
+启动一个本地的server . &lt;/p&gt;
 
 &lt;p&gt;创建一篇post
-rake post title=”Hello World”
-rake page name=”about.md”&lt;/p&gt;
+rake post title=&amp;quot;Hello World&amp;quot;
+rake page name=&amp;quot;about.md&amp;quot;&lt;/p&gt;
 
 &lt;p&gt;然后可以把这个目录的内容cp到自己的github项目里 , 
 需要注意
-修改文件：_config.yml，设置production_url
+修改文件：&lt;em&gt;config.yml，设置production_url
 ~ vi _config.yml
-production_url : http://frank0718.github.io&lt;/p&gt;
+production&lt;/em&gt;url : &lt;a href=&quot;http://frank0718.github.io&quot;&gt;http://frank0718.github.io&lt;/a&gt;&lt;/p&gt;
 
 &lt;p&gt;git add -all
-git commit -m “add “
+git commit -m &amp;quot;add &amp;quot;
 git  push  origin master
-然后就能看到博客了&lt;/p&gt;
-
+然后就能看到博客了 &lt;/p&gt;
 </content>
  </entry>
  
@@ -337,8 +340,7 @@ git  push  origin master
    <link href="http://frank0718.github.io/2015/12/09/hello-world"/>
    <updated>2015-12-09T00:00:00+08:00</updated>
    <id>http://frank0718.github.io/2015/12/09/hello-world</id>
-   <content type="html">
-&lt;h2 id=&quot;section&quot;&gt;开始&lt;/h2&gt;
+   <content type="html">&lt;h2&gt;开始&lt;/h2&gt;
 </content>
  </entry>
  

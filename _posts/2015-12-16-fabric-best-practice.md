@@ -7,17 +7,7 @@ tags: []
 ---
 {% include JB/setup %}
 
-{% inlude assets/themes/bootstrap-3/css# vi pygments.css %}
 
-```c
-/* hello world demo */
-#include <stdio.h>
-int main(int argc, char **argv)
-{
-    printf("Hello, World!\n");
-    return 0;
-}
-```
 
 #Fabric--运维自动化利器
 ##(一)介绍
