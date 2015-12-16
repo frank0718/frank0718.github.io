@@ -4,7 +4,7 @@
  <title>SA &amp; PE</title>
  <link href="http://frank0718.github.io/atom.xml" rel="self"/>
  <link href="http://frank0718.github.io"/>
- <updated>2015-12-16T19:06:30+08:00</updated>
+ <updated>2015-12-16T19:16:56+08:00</updated>
  <id>http://frank0718.github.io</id>
  <author>
    <name>Frank</name>
@@ -17,7 +17,9 @@
    <link href="http://frank0718.github.io/2015/12/16/test-highlight"/>
    <updated>2015-12-16T00:00:00+08:00</updated>
    <id>http://frank0718.github.io/2015/12/16/test-highlight</id>
-   <content type="html">&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;foo&lt;/span&gt;
+   <content type="html">&lt;p&gt;&lt;link rel=&quot;stylesheet&quot; href=&quot;assets/themes/bootstrap-3/css/pygments.css&quot;&gt;&lt;/p&gt;
+
+&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;foo&lt;/span&gt;
   &lt;span class=&quot;nb&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;foo&amp;#39;&lt;/span&gt;
 &lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
 </content>

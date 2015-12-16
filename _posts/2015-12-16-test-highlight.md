@@ -5,7 +5,10 @@ description: ""
 category: 
 tags: []
 ---
+
 {% include JB/setup %}
+
+<link rel="stylesheet" href="assets/themes/bootstrap-3/css/pygments.css">
 
 {% highlight ruby %}
 def foo
