@@ -5,10 +5,21 @@
         <description>SA &amp; PE - Frank</description>
         <link>http://frank0718.github.io</link>
         <atom:link href="http://frank0718.github.io/rss.xml" rel="self" type="application/rss+xml" />
-        <lastBuildDate>Wed, 16 Dec 2015 15:00:14 +0800</lastBuildDate>
-        <pubDate>Wed, 16 Dec 2015 15:00:14 +0800</pubDate>
+        <lastBuildDate>Wed, 16 Dec 2015 19:06:30 +0800</lastBuildDate>
+        <pubDate>Wed, 16 Dec 2015 19:06:30 +0800</pubDate>
         <ttl>60</ttl>
 
+
+        <item>
+                <title>test highlight</title>
+                <description>&lt;figure class=&quot;highlight&quot;&gt;&lt;pre&gt;&lt;code class=&quot;language-ruby&quot; data-lang=&quot;ruby&quot;&gt;&lt;span class=&quot;k&quot;&gt;def&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;foo&lt;/span&gt;
+  &lt;span class=&quot;nb&quot;&gt;puts&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;&amp;#39;foo&amp;#39;&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;end&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/figure&gt;
+</description>
+                <link>http://frank0718.github.io/2015/12/16/test-highlight</link>
+                <guid>http://frank0718.github.io/2015/12/16/test-highlight</guid>
+                <pubDate>Wed, 16 Dec 2015 00:00:00 +0800</pubDate>
+        </item>
 
         <item>
                 <title>fabric best practice</title>

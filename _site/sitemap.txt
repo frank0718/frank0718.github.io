@@ -9,6 +9,7 @@ http://frank0718.github.io/rss.xml
 http://frank0718.github.io/sitemap.txt
 http://frank0718.github.io/tags
 
+http://frank0718.github.io/2015/12/16/test-highlight
 http://frank0718.github.io/2015/12/16/fabric-best-practice
 http://frank0718.github.io/2015/12/14/github-blog
 http://frank0718.github.io/2015/12/09/hello-world
