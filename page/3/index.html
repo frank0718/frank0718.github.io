@@ -145,6 +145,72 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/03/08/rsync-by-log/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/03/08/rsync-by-log/" class="post-title-link" itemprop="url">rsync by log</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-03-08 11:24:06" itemprop="dateCreated datePublished" datetime="2016-03-08T11:24:06+08:00">2016-03-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-07-20 15:38:12" itemprop="dateModified" datetime="2020-07-20T15:38:12+08:00">2020-07-20</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="一个根据log同步文件的脚本"><a href="#一个根据log同步文件的脚本" class="headerlink" title="一个根据log同步文件的脚本"></a>一个根据log同步文件的脚本</h1><h3 id="实现增量同步"><a href="#实现增量同步" class="headerlink" title="实现增量同步"></a>实现增量同步</h3><h3 id="后台运行"><a href="#后台运行" class="headerlink" title="后台运行"></a>后台运行</h3><p><img src="/upload/image/sync.png" alt=""></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;bin&#x2F;bash</span><br><span class="line"></span><br><span class="line">RSYNC_LOCK&#x3D;&#39;&#x2F;home&#x2F;sh&#x2F;pro.lock&#39;</span><br><span class="line">rm -f $&#123;RSYNC_LOCK&#125;</span><br><span class="line"></span><br><span class="line">first_time&#x3D;true</span><br><span class="line">while [ 1 ]</span><br><span class="line">do</span><br><span class="line">echo &quot;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&quot;</span><br><span class="line">da&#x3D;&#96;date &quot;+%y&#x2F;%m&#x2F;%d %H:%M:%S&quot;&#96;</span><br><span class="line">echo $da</span><br><span class="line"></span><br><span class="line">if [ -e $&#123;RSYNC_LOCK&#125; ]; then</span><br><span class="line">    sleep 5</span><br><span class="line">   continue</span><br><span class="line">fi</span><br><span class="line">    touch $&#123;RSYNC_LOCK&#125;</span><br><span class="line">    echo &quot;first_time: &quot;$&#123;first_time&#125;</span><br><span class="line"></span><br><span class="line">## fisrt run</span><br><span class="line">    if [ $&#123;first_time&#125; &#x3D;&#x3D; true ];then</span><br><span class="line">        init_php_line&#x3D;1</span><br><span class="line">        init_ftp_line&#x3D;1</span><br><span class="line">    else</span><br><span class="line">        init_php_line&#x3D;$php_last_line</span><br><span class="line">        init_ftp_line&#x3D;$ftp_last_line</span><br><span class="line">    fi</span><br><span class="line">### log rotated </span><br><span class="line"></span><br><span class="line">    rotate_time&#x3D;&#96;echo &quot;$da&quot;|awk &#39;&#123;print $2&#125;&#39;|awk -F&#39;:&#39; &#39;&#123;print $1$2&#125;&#39;&#96;</span><br><span class="line">    echo $&#123;rotate_time&#125;</span><br><span class="line">    if [[ $&#123;rotate_time&#125; &#x3D;~ 0002 ]];then</span><br><span class="line">        init_php_line&#x3D;1</span><br><span class="line">        init_ftp_line&#x3D;1</span><br><span class="line">    fi </span><br><span class="line">    echo &quot;php init line number &#x3D; &quot;$init_php_line</span><br><span class="line">    echo &quot;ftp init line number &#x3D; &quot;$init_ftp_line </span><br><span class="line">        </span><br><span class="line">    phplog&#x3D;&#39;&#x2F;var&#x2F;log&#x2F;php_upload.log&#39;</span><br><span class="line">    php_last_line&#x3D;&#96;wc -l $phplog|awk &#39;&#123;print $1&#125;&#39;&#96;</span><br><span class="line">    echo &quot;php_last_line: $&#123;php_last_line&#125;&quot;</span><br><span class="line">    if [[ $init_php_line -eq $php_last_line ]];then</span><br><span class="line">        echo &quot;-------- no new php log&quot;</span><br><span class="line">        has_new&#x3D;false</span><br><span class="line">    else </span><br><span class="line">        php_content&#x3D;&#96;sed -n &quot;$init_php_line,$ p&quot; $phplog&#96;</span><br><span class="line">        ##echo &quot;php_content : $php_content&quot;</span><br><span class="line">        if [[ -n $&#123;php_content&#125; ]];then</span><br><span class="line">            sed -n &quot;$init_php_line,$ p&quot; $phplog| awk &#39;&#123;print $9&#125;&#39;|sed &#39;s&#x2F;^\&#x2F;home1&#x2F;\.&#x2F;g&#39; &gt; &#x2F;home&#x2F;sh&#x2F;pro.file</span><br><span class="line">            has_new&#x3D;true</span><br><span class="line">        ## log rotating</span><br><span class="line">        else </span><br><span class="line">            has_new&#x3D;false</span><br><span class="line">        fi</span><br><span class="line">    fi</span><br><span class="line">    </span><br><span class="line">    echo &quot;----------&quot;</span><br><span class="line">    ftplog&#x3D;&#39;&#x2F;var&#x2F;log&#x2F;xferlog&#39;</span><br><span class="line">    ftp_last_line&#x3D;&#96;wc -l $ftplog|awk &#39;&#123;print $1&#125;&#39;&#96;</span><br><span class="line">    echo &quot;ftp_last_line: $&#123;ftp_last_line&#125;&quot;</span><br><span class="line">    if [[ $init_ftp_line -eq $ftp_last_line ]];then</span><br><span class="line">        echo &quot;------- no new ftp log&quot;</span><br><span class="line">    else</span><br><span class="line">        ftp_content&#x3D;&#96;sed -n &quot;$init_ftp_line,$ p&quot; $ftplog&#96;</span><br><span class="line">        ##echo &quot;ftp_content :  $ftp_content&quot;</span><br><span class="line">        if [[ -n $ftp_content ]];then </span><br><span class="line">            if [[ $has_new &#x3D;&#x3D; true ]];then</span><br><span class="line">                echo &quot;phplog has new: $has_new&quot;</span><br><span class="line">                sed -n &quot;$init_ftp_line,$ p&quot; $ftplog |awk &#39;&#123;print $9&#125;&#39;|sed -e &#39;s&#x2F;^\&#x2F;home1&#x2F;\.&#x2F;g&#39; -e &#39;s&#x2F;^\&#x2F;data\&#x2F;home1&#x2F;\.&#x2F;g&#39; &gt;&gt; &#x2F;home&#x2F;sh&#x2F;pro.file</span><br><span class="line">            else</span><br><span class="line">                echo &quot;phplog has new: $has_new&quot;</span><br><span class="line">                sed -n &quot;$init_ftp_line,$ p&quot; $ftplog |awk &#39;&#123;print $9&#125;&#39;|sed -e &#39;s&#x2F;^\&#x2F;home1&#x2F;\.&#x2F;g&#39; -e &#39;s&#x2F;^\&#x2F;data\&#x2F;home1&#x2F;\.&#x2F;g&#39; &gt; &#x2F;home&#x2F;sh&#x2F;pro.file</span><br><span class="line">            fi</span><br><span class="line">        fi</span><br><span class="line">    fi</span><br><span class="line"></span><br><span class="line">    first_time&#x3D;false</span><br><span class="line"></span><br><span class="line">    if [ -s &#x2F;home&#x2F;sh&#x2F;pro.file ];then</span><br><span class="line">        &#x2F;usr&#x2F;bin&#x2F;rsync -au --timeout&#x3D;30 --ignore-errors --files-from&#x3D;&#x2F;home&#x2F;sh&#x2F;pro.file &#x2F;home1&#x2F; 1.1.1.1::pic&#x2F; </span><br><span class="line">        cat &#x2F;dev&#x2F;null &gt; &#x2F;home&#x2F;sh&#x2F;pro.file</span><br><span class="line">    fi</span><br><span class="line">    rm -f $&#123;RSYNC_LOCK&#125;</span><br><span class="line">    sleep 5;</span><br><span class="line">done</span><br></pre></td></tr></table></figure>
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/02/01/openresty-ip-limit-times/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -939,107 +1005,10 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2015/12/15/fabric-best-practice/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="John Doe">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2015/12/15/fabric-best-practice/" class="post-title-link" itemprop="url">fabric_best_practice</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">Posted on</span>
-
-              <time title="Created: 2015-12-15 15:21:04" itemprop="dateCreated datePublished" datetime="2015-12-15T15:21:04+08:00">2015-12-15</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">Edited on</span>
-                <time title="Modified: 2020-07-20 15:38:12" itemprop="dateModified" datetime="2020-07-20T15:38:12+08:00">2020-07-20</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>Fabric–运维自动化利器<br>(一)介绍<br>fabric是一个开源的,使用python作为源码的自动化运维工具.它具有以下优点:</p>
-<ol>
-<li>无需server端配置,只需client和server有ssh连接.</li>
-<li>相对于saltstack,ansible更轻量级.使用安装方便.</li>
-<li>配置文件使用python语言,源码为python,运维工程师操作起来学习成本较小.出现问题可直接翻阅源码.</li>
-<li>可自定义python函数,完成自定的自动化功能.相对于ansible的模块化,显得比较自由.<br>…</li>
-</ol>
-<p>(二)安装</p>
-<ol>
-<li>推荐 pip install fabric</li>
-<li>不推荐 sudo apt-get install fabric  版本会比较旧</li>
-</ol>
-<p>(三)使用</p>
-<p>安装完之后会有一个fab 命令来执行,默认使用pwd下面的fabfile.py 作为配置文件.也可以使用 fab -f somefile.py 来作为配置文件.具体的命令行参数可以通过<br>fab -h来查看</p>
-<p>工具的核心是其配置文件,我默认就使用fabfile.py作为文件名.下面就里面一些配置做下简要介绍.</p>
-<p>(1)重要api</p>
-<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> fabric.api <span class="keyword">import</span>  * 导入fabric包中的核心api函数.大概包括以下</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="string">"""</span></span><br><span class="line"><span class="string">abort          fastprint      lcd            parallel       put            remote_tunnel  runs_once      show           warn_only      </span></span><br><span class="line"><span class="string">cd             get            local          path           puts           require        serial         sudo           with_settings  </span></span><br><span class="line"><span class="string">env            hide           open_shell     prefix         quiet          roles          settings       task           </span></span><br><span class="line"><span class="string">execute        hosts          output         prompt         reboot         run            shell_env      warn   </span></span><br><span class="line"><span class="string">open_shell</span></span><br><span class="line"><span class="string">"""</span></span><br></pre></td></tr></table></figure>
-
-<p>其中比较重要和常用的有</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">lcd:切换本地目录</span><br><span class="line">parallel:多个server并行执行任务</span><br><span class="line">put:上传本地文件到server</span><br><span class="line">cd:切换server的目录</span><br><span class="line">get:下载server的文件到本地</span><br><span class="line">local:执行本地的命令</span><br><span class="line">sudo:在server上执行sudo命令</span><br><span class="line">env:设置本地的环境变量.</span><br><span class="line">roles:选定一组role</span><br><span class="line">execute:绑定多个方法</span><br><span class="line">hosts:选定一组server</span><br><span class="line">run:执行具体的任务.</span><br></pre></td></tr></table></figure>
-
-
-<p>(2)输出着色<br>from fabric.colors import * 导入fabric包中的颜色函数,用来对输出进行着色.</p>
-<p>(3)设定环境变量</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">env.user &#x3D; &#39;bjzhangfeng&#39;#指定remote server中的用户</span><br><span class="line">env.port  &#x3D; &#39;22&#39; #指定remote server ssh的port</span><br><span class="line">这个设置是全局的,在具体的函数里面可以对其重新设定来覆盖这个全局设置,比如某一台server 的ssh port 不为22.</span><br><span class="line"></span><br><span class="line">env.roledefs &#x3D; &#123;  #设定一组角色, 比如abc 代表一组server,xyz代表一组server</span><br><span class="line">    &#39;abc&#39;:[</span><br><span class="line">    &#39;1.1.1.1&#39;,</span><br><span class="line">    &#39;1.1.1.2&#39;,</span><br><span class="line">    &#39;1.1.1.3&#39;,</span><br><span class="line">    ],</span><br><span class="line">  &#39;xyz&#39;:[</span><br><span class="line">    &#39;2.1.1.1&#39;,</span><br><span class="line">    &#39;2.1.1.2&#39;,</span><br><span class="line">    &#39;2.1.1.3&#39;,</span><br><span class="line">    ],</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-<p>(4)定义任务</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br></pre></td><td class="code"><pre><span class="line">(a):run方法</span><br><span class="line">def w():</span><br><span class="line">    run(&#39;w&#39;)</span><br><span class="line">通过定义函数来执行具体的任务,run指在server上 以 env.user用户执行w命令.</span><br><span class="line">fab -R abc w</span><br><span class="line">在abc这组server上执行w</span><br><span class="line">fab -H 1.1.1.1 w</span><br><span class="line">在单台server上执行 w</span><br><span class="line">fab -H 1.1.1.1,1.1.1.2 w</span><br><span class="line">在这两台机器上执行w</span><br><span class="line"></span><br><span class="line">(b)local 方法</span><br><span class="line">def w():</span><br><span class="line">   local(&#39;w&#39;)</span><br><span class="line">fab w</span><br><span class="line">在本地执行w命令</span><br><span class="line"></span><br><span class="line">(c)sudo 方法</span><br><span class="line">def ss():</span><br><span class="line">  sudo(&#39;ss -s&#39;)</span><br><span class="line">fab -R abc ss</span><br><span class="line">在abc组以sudo的方式执行ss -s</span><br><span class="line"></span><br><span class="line">(d)roles&#x2F;hosts装饰器</span><br><span class="line">@roles(&#39;abc&#39;)</span><br><span class="line">def w():</span><br><span class="line">    run(&#39;w&#39;)</span><br><span class="line"></span><br><span class="line">fab w</span><br><span class="line">绑定w方法到abc服务器角色. 对于某个方法只适用于某个role的情形下,非常好用.</span><br><span class="line"></span><br><span class="line">(e)parallel装饰器.</span><br><span class="line">@parallel</span><br><span class="line">@roles(&#39;abc&#39;)</span><br><span class="line">def w():</span><br><span class="line">    run(&#39;w&#39;)</span><br><span class="line">fab w</span><br><span class="line">以并行的方式在abc一组server上,执行w命令.由于fabric默认是串行的执行任务.在server比较多的情况下,并行执行可以节省时间.</span><br><span class="line"></span><br><span class="line">(f)put方法&#x2F;get 方法</span><br><span class="line">def put():</span><br><span class="line">   put(&#39;~&#x2F;locafile&#39;,&#39;~&#x2F;&#39;)</span><br><span class="line">fab -R abc put</span><br><span class="line">把本地文件put到server端</span><br><span class="line"></span><br><span class="line">(g) 对方法传参数,</span><br><span class="line">def curlc(url):</span><br><span class="line">    while True:</span><br><span class="line">        local(&#39;curl -I %s ; sleep 1&#39; % (url,))</span><br><span class="line">fab curlc:http:&#x2F;&#x2F;www.163.com</span><br><span class="line">对于多个参数用逗号分隔</span><br><span class="line">def curl(url,ip&#x3D;&#39;2.2.2.2&#39;):</span><br><span class="line">    while True:</span><br><span class="line">        local(&#39;curl -I %s -x %s:80; sleep 1&#39; % (url,ip))</span><br><span class="line">fab curl:http:&#x2F;&#x2F;www.163.com,1.1.1.1</span><br><span class="line"></span><br><span class="line">(h)execute方法</span><br><span class="line">def ab(url):</span><br><span class="line">    execute(a,url)</span><br><span class="line">    execute(b,url)</span><br><span class="line">fab -R abc ab</span><br><span class="line">当需要合并执行多个方法的时候可以用这种方式,</span><br><span class="line"></span><br><span class="line">(i)更换user,port</span><br><span class="line">def whoami():</span><br><span class="line">    env.user &#x3D; &#39;fabric&#39;</span><br><span class="line">    run(&#39;whoami&#39;)</span><br><span class="line">fab -R xyz whoami</span><br><span class="line">在xyz上以fabric用户执行</span><br><span class="line"></span><br><span class="line"> def ew():</span><br><span class="line">    env.port &#x3D; &#39;8822&#39;</span><br><span class="line">    run(&#39;w&#39;)</span><br><span class="line">fab -R xyz w</span><br><span class="line">使用8822端口登陆ssh执行命令</span><br></pre></td></tr></table></figure>
-
-
-<p>(四)总结<br>本文简单介绍了fabric工具,并展示了一些基本的使用方法.有需求的同学可以深入研究,以提高工作效率.</p>
-<p>(五)参考文档<br><a href="http://docs.fabfile.org/en/1.10/index.html" target="_blank" rel="noopener">http://docs.fabfile.org/en/1.10/index.html</a></p>
-
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span>
+    <a class="extend prev" rel="prev" href="/page/2/"><i class="fa fa-angle-left" aria-label="Previous page"></i></a><a class="page-number" href="/">1</a><a class="page-number" href="/page/2/">2</a><span class="page-number current">3</span><a class="page-number" href="/page/4/">4</a><a class="extend next" rel="next" href="/page/4/"><i class="fa fa-angle-right" aria-label="Next page"></i></a>
   </nav>
 
 
@@ -1105,7 +1074,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">30</span>
+          <span class="site-state-item-count">31</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
