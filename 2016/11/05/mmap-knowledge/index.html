@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.1">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="http:&#x2F;&#x2F;hemming.blog.hexun.com&#x2F;15094457_d.html 本文主要分析内存以及I&#x2F;O相关的系统调用和库函数的实现原理，根据原理给出在使用过程中需要注意的问题和优化的侧重点，本文涉及到的系统调用包括readahead，pread&#x2F;pwrite，read&#x2F;write，mmap，readv&#x2F;writev，sendfile，fsync&#x2F;fdatasync&#x2F;msync，sh">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mmap-knowledge">
+<meta property="og:url" content="http://yoursite.com/2016/11/05/mmap-knowledge/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="http:&#x2F;&#x2F;hemming.blog.hexun.com&#x2F;15094457_d.html 本文主要分析内存以及I&#x2F;O相关的系统调用和库函数的实现原理，根据原理给出在使用过程中需要注意的问题和优化的侧重点，本文涉及到的系统调用包括readahead，pread&#x2F;pwrite，read&#x2F;write，mmap，readv&#x2F;writev，sendfile，fsync&#x2F;fdatasync&#x2F;msync，sh">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2016-11-05T06:02:57.000Z">
+<meta property="article:modified_time" content="2020-07-20T07:38:12.448Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2016/11/05/mmap-knowledge/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'en'
+  };
+</script>
+
+  <title>mmap-knowledge | Hexo</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hexo</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/11/05/mmap-knowledge/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          mmap-knowledge
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-11-05 14:02:57" itemprop="dateCreated datePublished" datetime="2016-11-05T14:02:57+08:00">2016-11-05</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-07-20 15:38:12" itemprop="dateModified" datetime="2020-07-20T15:38:12+08:00">2020-07-20</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p><a href="http://hemming.blog.hexun.com/15094457_d.html" target="_blank" rel="noopener">http://hemming.blog.hexun.com/15094457_d.html</a></p>
+<pre><code>本文主要分析内存以及I/O相关的系统调用和库函数的实现原理，根据原理给出在使用过程中需要注意的问题和优化的侧重点，本文涉及到的系统调用包括readahead，pread/pwrite，read/write，mmap，readv/writev，sendfile，fsync/fdatasync/msync，shmget，malloc。
+本文先简单介绍应用程序对内存的使用以及I/O系统对内存的使用的基本原理，这对理解上述系统调用和库函数的实现有很大帮助。</code></pre><p>1 内存管理基础<br>       Linux对物理内存的管理是以页为单位的，通常页大小为4KB，Linux在初始化时为所有物理内存也分配了管理数据结构，管理所有物理页面。<br>       每一个应用程序有独立的地址空间，当然这个地址是虚拟的，通过应用程序的页表可以把虚拟地址转化为实际的物理地址进行操作，虽然系统可以实现从虚拟地址到物理地址的转换，但并非应用程序的每一块虚拟内存都对应一块物理内存。Linux使用一种按需分配的策略为应用程序分配物理内存，这种按需分配是使用缺页异常实现的。比如一个应用程序动态分配了10MB的内存，这些内存在分配时只是在应用程序的虚拟内存区域管理结构中表示这一区间的地址已经被占用，内核此时并没有为之分配物理内存，而是在应用程序使用（读写）该内存区时，发现该内存地址对应得物理内存并不存在，此时产生缺页异常，促使内核为当前访问的虚拟内存页分配一个物理内存页。<br>       一个已经分配给应用程序的物理页，在某些情况下也会被系统回收作为其他用途，比如对于上述的动态分配的内存，其内容可能被换到交换分区，系统暂时回收物理页面，当应用程序再次使用这个内存页时，系统再分配物理页面，把该页的内容从交换分区上换回到这个物理页，再重新建立页表映射关系。不同类型的虚拟内存页对应的物理内存的分配回收处理过程是不同的，在分析具体系统调用细节时，我们再做详细说明。</p>
+<p>2 文件系统I/O原理<br>       操作系统I/O部分不仅涉及到对普通块设备的操作，也涉及到对字符设备和网络设备的操作，本文只涉及对普通块设备的描述。<br>       应用程序对文件的操作基本可以通过两种方式实现：普通的read/write和mmap方式，但这两种方式都并不是应用程序在读写文件内容时直接操作块设备（有一些特殊的例外情况），而是经过了操作系统层的page cache，即，无论应用程序以哪种方式读文件数据时，都是由操作系统把这部分文件数据加载到内核层，应用程序再通过不同的方式操作在内存中的文件数据，写的过程也一样，应用程序实际上只是把数据写到文件在内存中所对应的页上，然后在一定的时机或强行回写到块设备上。<br>       我们需要对page cache作一些说明，page cache可以理解为对所有文件数据的缓冲，在一般情况下，对文件操作都需要通过page cache这个中间层（特殊情况我们下面会描述），page cache并不单单只是一个数据中转层，在page cache层，内核对数据做了有效的管理，暂时不使用的数据在内存允许的情况下仍然放在page cache中，所有的应用程序共用一个page cache，不同的应用程序对同一块文件数据的访问，或者一个应用程序对一块数据的多次访问都不需要多次访问块设备获得，这样就加快了I/O操作的性能。<br>       不同的系统调用对文件数据的访问区别在于page cache之上对数据的访问方式的不同，数据在page cache和块设备之间的操作过程是基本类似的。这种区别主要体现在read/write方式和mmap方式。它们各自得细节我们下面会分别描述。<br>3 readahead<br>       在描述了page cache的原理和功能之后，readahead就比较容易理解了，当使用系统调用read读取文件部分数据时，如果数据没有在page cache中，就需要从块设备读取对应数据，对于像磁盘这样的块设备，寻道是最耗时的操作，读一小块数据和读一大块连续数据所花的时间相差不大，但如果这一大块数据分多次读取，就需要多次寻道，这样花费的时间就比较长。<br>       readahead是基于这样的策略：在需要读取一块数据的时候，如果后继的操作是连续读，可以在多读一些数据到page cache中，这样下次访问的连续数据的时候，这些数据已经在page cache中了，就无需I/O操作，这样会大大提高数据访问的效率。<br>       Linux的readahead分为自动模式和用户强制模式，自动预读是指在read系统调用的时候，如果需要从块设备传输数据，系统会自动根据当前的状态设置预读的数据的大小，启用预读过程。每次预读的数据的大小是动态调整的，调整地原则是根据预读后的命中情况适当扩大或缩小预读大小。每次预读的默认大小是可以设置的，而且不同的块设备可以有不同的默认预读大小，察看和设置块设备默认预读大小都可以通过blockdev命令。<br>       这种自动模式的预读机制在每次I/O操作前是都会被启用，所以预读默认大小的设置对性能有一些影响，如果是大量随机读操作，在这种情况下就需要让预读值调小, 但并不是越小越好，一般情况下需要估算一下应用程序平均每次read请求读取的数据量的平均大小，将预读值设成比平均大小稍大一些比较合适；如果是大量顺序读操作，则预读值可以调大一点（对于使用RAID的情况下，预读值的设置还要参考条带大小和条带数）。<br>       在自动预读模式中需要注意的问题还有，如果文件本身有许多很小的碎片，即使是连续读，而且也设置了较大的预读值，其效率也不会太高，因为如果一次被读取的数据在磁盘中不连续的话，仍然不可避免磁盘寻道，所以预读起的作用就不大了。<br>       Linux提供一个readahead的系统调用设置对文件进行强制预读，这个操作是把数据从块设备加载到page cache中，可以提高之后对文件数据访问的速度，用户可以根据自己的需要决定是否使用强制预读。</p>
+<p>4 read/write<br>       read/write是读写I/O的基本过程，除了mmap之外，其他I/O读写系统调用的基本原理和调用过程都是和read/write一样的。<br>       read过程：把需要读取得数据转换成对应的页，对需要读入的每一个页执行如下过程：首先调用page_cache_readahead(如果预读打开)，根据当前预读的状态和执行预读策略（预读状态结构根据命中情况和读模式动态调整，预读策略也动态调整），预读过程会进行I/O操作也可能不会，预读过程完毕之后，首先检查page cache中是否已经有所需数据，如果没有，说明预读没有命中，调用handle_ra_miss调整预读策略，进行I/O操作把该页数据读入内存并加入page cache，当该页数据读入page cache之后（或者之前就在page cache中），标记该页mark_page_accessed，然后把该页数据拷贝到应用程序地址空间。<br>       write过程：和read过程一样，需要把需要写的数据转换成对应页，从应用程序地址空间把数据拷贝到对应页，并标记该页状态为dirty，调用mark_page_accessed，如果没有指定为同步写，写操作至此就返回了。如果文件在打开时指定了O_SYNC，系统会把本次写过程所有涉及到的dirty页回写到块设备中，这个过程是阻塞的。关于dirty页的同步在分析fsync/fdatasync/msync时我们再具体说明。<br>       特殊情况：如果应用程序在打开文件时指定了O_DIRECT，操作系统在读写文件时会完全绕过page cache，读的时候数据直接从块设备传送到应用程序指定的缓存中，写的时候数据也是直接从应用程序指定的缓存中写到块设备中，由于没有经过page cache层，这种方式的写总是同步写。</p>
+<p>5 mmap<br>       mmap的用途很广泛，不仅可以把文件映射到内存地址空间读写文件，也可以用mmap实现共享内存，malloc分配内存是也是用了mmap，本节我们先讨论使用mmap读写文件的实现。<br>       每个进程对虚拟内存都是通过分区域管理的，在虚拟内存分配时，为不同的用途划分不同的虚拟内存区域，这些虚拟内存区域在分配之初并没有为止分配对应的物理内存，而只是分配和设置了管理结构，当进程使用到某个区域的内存，而其又没有对应的物理内存时，系统产生缺页异常，在缺页异常中，系统根据这块内存对应的虚拟内存管理结构为之分配物理内存，在必要情况下（如mmap）加载数据到这块物理内存，建立虚拟内存到物理内存的对应关系，然后进程可以继续访问刚才的虚拟内存。<br>       mmap的实现也是基于上述原理，在使用mmap映射某个文件（或者文件的一部分）到进程的地址空间时，并没有加载文件的数据，而只是在进程的虚拟地址空间划分出一块区域，标记这块区域用于映射到文件的数据区域，mmap的操作就完成了。<br>       当进程试图读或者写文件映射区域时，如果没有对应的物理页面，系统发生缺页异常并进入缺页异常处理程序，缺页异常处理程序根据该区域内存的类型使用不同的策略解决缺页。对于使用mmap映射文件的虚拟内存区域，处理程序首先找到相关的文件的管理数据结构，确定所需页面对应的文件偏移，此时需要从文件中把对应数据加载到page_cache中，与read系统调用流程不同的是，在加载的过程中如果虚拟内存区域管理结构设置了VM_RAND_READ标志，系统只是把所需的页面数据加载，如果设置了VM_SEQ_READ标志，系统会进行和read系统调用相同预读过程，至此应用程序所需的页面已经在page cache中了，系统调整页表把物理页面对应到应用程序的地址空间。mmap对缺页的处理没有读和写的区别，无论是读还是写造成的缺页异常都要执行上述过程。<br>       虚拟内存区域管理结构的VM_RAND_READ标志和VM_SEQ_READ标志可以使用madvise系统调用调整。<br>       使用mmap读写文件需要注意的问题：当读写映射的内存区域的物理页面不存在时，发生缺页异常时系统才能进入内核态，如果物理页面存在，应用程序在用户态直接操作内存，不会进入内核态，大家注意到在调用read/write系统调用时，系统对涉及到的页面都调用了mark_page_accessed函数，mark_page_accessed可以标记物理页面的活动状态，活动的页面就不容易被回收，而是用mmap读文件不产生缺页异常时不能进入内核态，就无法标记页面的活动状态，这样页面就容易被系统回收（进入缺页异常处理时也只是对新分配所缺页面调用了mark_page_accessed）。除此之外，在写该内存区域时，如果不进入内核态也无法标记所写的物理页面为dirty（只用把页表项的dirty位置位），这个问题我们会在后面的msync说明中详细描述。</p>
+<p>6 pread/pwrite，readv/writev<br>       这几个系统调用在内核中的实现和read/write区别不大，只是参数不同而已，在read/write中使用的是文件默认偏移，pread/pwrite在参数种指定文件操作的偏移，这样在多线程操作中避免了为读写偏移加锁。readv/writev可以把把文件的内容写到多个位置，也可以从多个位置向文件中写数据，这样就可以避免多次系统调用的开销。</p>
+<p>7 sendfile<br>       sendfile把文件的从某个位置开始的内容送入另一个文件中（可能会是一个套接字），这种操作节省了数据在内存中的拷贝次数，如果使用read/write实现，会增加两次数据拷贝操作。其内核实现方法和read/write也没有太大区别。</p>
+<p>8 fsync/fdatasync/msync<br>       这三个系统调用都涉及把内存中的dirty page同步到的块设备上的文件中去，它们之间有一些区别。<br>       fsync把文件在page cache中的dirty page写回到磁盘中去，一个文件在page cache中的内容包括文件数据也包括inode数据，当写一个文件时，除了修改文件数据之外，也修改了inode中的数据（比如文件修改时间），所以实际上有这两部分的数据需要同步，fsync把和指定文件相关的这两种dirty page回写到磁盘中。除了使用fsync强行同步文件之外，系统也会定期自动同步，即把dirty page回写到磁盘中。<br>       Fdatasync只回写文件数据的dirty page到磁盘中，不回写文件inode相关的dirty page。<br>       msync与fsync有所不同，在使用mmap映射文件到内存地址，向映射地址写入数据时如果没有缺页，就不会进入内核层，也无法设置写入页的状态为dirty，但cpu会自动把页表的dirty位置位，如果不设置页为dirty，其他的同步程序，如fsync以及内核的同步线程都无法同步这部分数据。msync的主要作用就是检查一个内存区域的页表，把dirty位置位的页表项对应的页的状态设置为dirty，如果msync指定了M_SYNC参数，msync还会和fsync一样同步数据，如果指定为M_ASYNC，则用内核同步线程或其他调用同步数据。<br>       在munmap时，系统会对映射的区域执行类似msync的操作，所以如果不调用msync数据也不一定会丢失（进程在退出时对映射区域也会自动调用munmap），但写大量数据不调用msync会有丢失数据的风险。</p>
+<p>9 shmget/shmat<br>       实际上无论是posix还是system v接口的共享内存，都是使用mmap来实现的，其原理也是一样的。把一个文件（可以是特殊文件或普通文件）映射到不同进程的地址空间，从上面描述的mmap的原理可以得知，一个文件在内核page cache中只有一份，不同的进程操作对同一个文件区域的映射，实际上就实现了对内存的共享。<br>       基于上面的原理，posix接口的共享内存就很容易理解了，system v接口的共享内存看起来没有那么直观，实际上一样，只不过它使用了特殊文件系统shmfs来做内存映射实现内存共享，shmfs实现了一个特殊的功能，使用普通文件进行文件共享时，当系统需要回收物理页面时，是把dirty页回写到磁盘上，然后回收该页，但如果没有调用msync，系统就无法知道该页是dirty页，在页面回收时就会直接抛弃掉该页的内容(因为它认为磁盘上还有)。这样就导致数据不一致，而shmfs的实现很特殊，它所有的页永远都是脏页，它的回写函数不是把数据回写到普通文件中，而是在交换分区（如果有的话）分配一块空间，把物理页内容写到交换分区上并标记它。shmfs避免了mmap在使用过程中可能出现的风险，而且对用户是透明的，它专为内存共享设计。<br>       shmget的作用就是想系统申请一定大小的共享内存区域，它只是在操作系统中唯一标示了一块共享内存区，但此时并没有为之分配物理内存，只是分配了管理结构，可以理解为在shmfs中创建了一个文件（如果已经存在，相当于打开了一个文件）。shmat间接使用mmap把shmget打开（或创建）的shmfs文件映射到应用程序的地址空间，其他过程就和mmap普通文件的处理一样了，只不过共享内存通过shmfs巧妙的避开了mmap的缺点。</p>
+<p>10 malloc<br>       malloc只是一个库函数，在不同的平台对malloc有不同的实现，glibc使用的是ptmalloc的实现。malloc是从堆上分配内存，但在内核中并没有堆的概念，堆只是一个应用程序的概念，在进程创建的时候，在进程的虚拟地址空间中划分出一块区域作为堆，这块区域并没有对应的物理内存，使用malloc分配内存实际上只是从这块虚拟内存区域分出更小的区域给应用程序，只有当应用程序访问这个小区域时才会产生缺页中断，从而获得物理内存。而free并不会释放物理内存，而是把在堆上分配的小区域归还给堆，这些操作都是glibc在应用层实现的。<br>       malloc的使用过程中会使用两个系统调用brk和mmap，brk用于增长（或减小）堆的大小，在进程创建时会指定堆的起始地址（堆空间是向上增长的），而堆的大小为0，当使用malloc分配内存时发现当前堆剩余空间不够时就会调用brk增长堆的大小，实际上brk的作用就是把堆所在的虚拟内存区域的结束地址增长（或减小）到某个位置。当malloc一次分配的空间大于一个阀值大小时(比如128K)，malloc不再从堆上分配空间，而是使用mmap重新映射一块虚拟地址区域，在free时调用munmap释放这一区域。这样的策略主要是方便堆管理，避免在一个很大的尺度管理堆，这样做是基于大内存分配并不常使用这个假设。<br>       可以注意到如果分配的内存过大，在分配和释放时都要通过系统调用，效率会有降低，所以如果应用程序频繁分配大于分配阀值的内存，效率就会很低，这种应用可以通过调整分配阀值使内存分配和释放都在用户态（在堆中）完成。使用mallopt可以调整malloc的参数，M_TRIM_THRESHOLD表示如果堆大小大于该值，就应该在适当的时候收缩堆的大小，M_MMAP_THRESHOLD表示大于此值的内存分配请求要使用 mmap 系统调用。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2016/11/01/how-to-get-github-student-package/" rel="prev" title="how to get github student package">
+      <i class="fa fa-chevron-left"></i> how to get github student package
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2017/04/14/golang-channel-cocurrent-timeout/" rel="next" title="golang-channel-cocurrent-timeout">
+      golang-channel-cocurrent-timeout <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">John Doe</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">28</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">categories</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">tags</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">John Doe</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://muse.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
