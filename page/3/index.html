@@ -145,6 +145,94 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/02/01/python-log-analyze/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="John Doe">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2016/02/01/python-log-analyze/" class="post-title-link" itemprop="url">python log analyze</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2016-02-01 20:05:48" itemprop="dateCreated datePublished" datetime="2016-02-01T20:05:48+08:00">2016-02-01</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-07-20 15:38:12" itemprop="dateModified" datetime="2020-07-20T15:38:12+08:00">2020-07-20</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/python-log/" itemprop="url" rel="index"><span itemprop="name">python log</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="nginx-log-url统计"><a href="#nginx-log-url统计" class="headerlink" title="nginx log url统计"></a>nginx log url统计</h1><ul>
+<li>python tailf 每条nginx的log, 把url存放在redis,设置过期时间,后台运行</li>
+<li>每条key ,放在一个redis的list中, 保证list中每个item是唯一的</li>
+<li>设置这个list的过期时间是一天</li>
+<li>每分钟从这个list中遍历元素,即是redis的set,每次取set的value放在python的dict中</li>
+<li>遍历python的dict,然后print 访问量前n的数据</li>
+</ul>
+<p>set key的代码<br>python insert_redis.py &gt; /dev/null 2&gt;&amp;1  &amp; </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;python</span><br><span class="line"></span><br><span class="line">import sys,os</span><br><span class="line">import redis</span><br><span class="line">import time</span><br><span class="line">import subprocess</span><br><span class="line">import select</span><br><span class="line"></span><br><span class="line">r &#x3D; redis.Redis(host&#x3D;&#39;localhost&#39;,port&#x3D;6379,db&#x3D;0)</span><br><span class="line"></span><br><span class="line">def insert_redis(insert_key,expire):</span><br><span class="line">    url_list &#x3D; r.lrange(&#39;url&#39;,0,-1)</span><br><span class="line">    #print url_list</span><br><span class="line">    k &#x3D; &#39;URL_&#39; + str(insert_key)</span><br><span class="line">    k &#x3D; k.strip(&#39;\n&#39;)</span><br><span class="line">    if k in url_list:</span><br><span class="line">        print &quot;&#123;0&#125; in &quot;.format(k)</span><br><span class="line">        r.incr(k)</span><br><span class="line">    else:</span><br><span class="line">        print &quot;&#123;0&#125; not in&quot;.format(k)</span><br><span class="line">        r.setex(k,1,expire)</span><br><span class="line">        r.lpush(&#39;url&#39;,k)</span><br><span class="line">    times &#x3D; r.get(k)</span><br><span class="line"></span><br><span class="line">    print &quot;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&quot;</span><br><span class="line"></span><br><span class="line">     </span><br><span class="line">filename &#x3D; &#39;&#x2F;home&#x2F;nginx&#x2F;logs&#x2F;access.log&#39;</span><br><span class="line">f &#x3D; subprocess.Popen([&#39;tail&#39;,&#39;-F&#39;,filename],\</span><br><span class="line">        stdout&#x3D;subprocess.PIPE,stderr&#x3D;subprocess.PIPE)</span><br><span class="line">p &#x3D; select.poll()</span><br><span class="line">p.register(f.stdout)</span><br><span class="line"></span><br><span class="line">while True:</span><br><span class="line">    if p.poll(1):</span><br><span class="line">        line &#x3D; f.stdout.readline()</span><br><span class="line">	insert_key &#x3D; line.split()[6]</span><br><span class="line">	print insert_key</span><br><span class="line">	insert_redis(insert_key,86400)</span><br><span class="line">    time.sleep(0.2)</span><br></pre></td></tr></table></figure>
+
+
+<p>get key的代码<br>python pyredis.py</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">#!&#x2F;usr&#x2F;bin&#x2F;python</span><br><span class="line">import sys,os</span><br><span class="line">import redis</span><br><span class="line"></span><br><span class="line">#print r.get(&#39;URL:nc.apk&#39;)</span><br><span class="line">#r.lrange(&#39;url&#39;,0,3) return times </span><br><span class="line">#print r.lrange(&#39;abc&#39;,0,-1)</span><br><span class="line">## if not exist touch &#39;abc</span><br><span class="line"></span><br><span class="line">def get_redis():</span><br><span class="line">    url_list &#x3D; r.lrange(&#39;url&#39;,0,-1)</span><br><span class="line">    print url_list</span><br><span class="line">    for k in url_list:</span><br><span class="line">    	times &#x3D; r.get(k)</span><br><span class="line">    	print times</span><br><span class="line">        if times &#x3D;&#x3D; None:</span><br><span class="line">            continue</span><br><span class="line">        else:</span><br><span class="line">    	    url_dict[k] &#x3D; int(times)</span><br><span class="line">def set_expire():</span><br><span class="line">    import datetime </span><br><span class="line">    date &#x3D; datetime.datetime.now()</span><br><span class="line">    hm&#x3D; date.strftime(&quot;%H:%M&quot;)</span><br><span class="line">    print hm</span><br><span class="line">    if hm &#x3D;&#x3D; &#39;00:00&#39;:</span><br><span class="line">        r.expire(&#39;url&#39;,86400)</span><br><span class="line"></span><br><span class="line">def sort_by_key_top(n):</span><br><span class="line">    top &#x3D; 1</span><br><span class="line">    for key,value in sorted(url_dict.iteritems(), key&#x3D;lambda d:d[1], reverse &#x3D; True):</span><br><span class="line">        url_dict.setdefault(key,0)</span><br><span class="line">        if top &#x3D;&#x3D; n :</span><br><span class="line">    	    print key + &quot;&#x3D;&quot; + str(value) + &#39;,&#39;,</span><br><span class="line">            break</span><br><span class="line">         </span><br><span class="line">        print key + &quot;&#x3D;&quot; + str(value) + &#39;,&#39;,</span><br><span class="line">        top +&#x3D; 1</span><br><span class="line"></span><br><span class="line">if __name__ &#x3D;&#x3D; &#39;__main__&#39;:</span><br><span class="line">    r &#x3D; redis.Redis(host&#x3D;&#39;localhost&#39;,port&#x3D;6379,db&#x3D;0)</span><br><span class="line">    url_dict &#x3D; &#123;&#125;</span><br><span class="line">    get_redis()</span><br><span class="line">    sort_by_key_top(10)</span><br><span class="line">    set_expire()</span><br></pre></td></tr></table></figure>
+
+
+
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="en">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2016/01/14/http-code-monitor/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -930,7 +1018,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">28</span>
+          <span class="site-state-item-count">29</span>
           <span class="site-state-item-name">posts</span>
         </a>
       </div>
